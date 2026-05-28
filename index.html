@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>旅行足迹</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://geo.datav.aliyun.com" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="旅行足迹导航">
+        <div class="brand">
+          <div class="brand-mark">旅</div>
+          <div>
+            <h1>旅行足迹</h1>
+            <p>点亮去过的中国城市</p>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="主要页面">
+          <button class="nav-item active" type="button" data-view="map">
+            <i data-lucide="map"></i>
+            <span>地图</span>
+          </button>
+          <button class="nav-item" type="button" data-view="diary">
+            <i data-lucide="book-open"></i>
+            <span>游记</span>
+          </button>
+          <button class="nav-item" type="button" data-view="wishlist">
+            <i data-lucide="flag"></i>
+            <span>心愿</span>
+          </button>
+        </nav>
+
+        <div class="stats-grid" aria-label="旅行统计">
+          <div>
+            <span id="visitedCount">0</span>
+            <small>已去城市</small>
+          </div>
+          <div>
+            <span id="wishCount">0</span>
+            <small>心愿城市</small>
+          </div>
+          <div>
+            <span id="diaryCount">0</span>
+            <small>游记篇数</small>
+          </div>
+          <div>
+            <span id="progressCount">0%</span>
+            <small>足迹进度</small>
+          </div>
+        </div>
+
+        <div class="tip-panel">
+          <i data-lucide="sparkles"></i>
+          <p>点击地图上的地区查看详情；双击地区可快速在已去、心愿、未标记之间切换。</p>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Personal Travel Atlas</p>
+            <h2 id="viewTitle">中国旅行地图</h2>
+          </div>
+          <div class="topbar-actions">
+            <label class="search-box" aria-label="搜索城市或游记">
+              <i data-lucide="search"></i>
+              <input id="globalSearch" type="search" placeholder="搜索城市、计划、游记" />
+            </label>
+            <button class="icon-button" id="exportBtn" type="button" aria-label="导出数据" title="导出数据">
+              <i data-lucide="download"></i>
+            </button>
+            <label class="icon-button" aria-label="导入数据" title="导入数据">
+              <i data-lucide="upload"></i>
+              <input id="importFile" type="file" accept="application/json" hidden />
+            </label>
+          </div>
+        </header>
+
+        <section class="view active" id="mapView" data-view-panel="map">
+          <div class="map-layout">
+            <section class="map-stage" aria-label="中国城市地图">
+              <div class="map-toolbar">
+                <div class="legend">
+                  <span><b class="dot neutral"></b>未去</span>
+                  <span><b class="dot visited"></b>已去</span>
+                  <span><b class="dot wish"></b>心愿</span>
+                </div>
+                <div class="segmented map-view-control" role="group" aria-label="地图视图">
+                  <button class="segment active" id="backChinaBtn" type="button">全国</button>
+                </div>
+              </div>
+              <div id="mapChart"></div>
+              <div class="map-loading" id="mapLoading">
+                <i data-lucide="loader-circle"></i>
+                <span>地图加载中</span>
+              </div>
+            </section>
+
+            <aside class="detail-panel" aria-label="城市详情">
+              <div class="city-cover" id="cityCover">
+                <div>
+                  <span id="selectedProvince">中国城市</span>
+                  <h3 id="selectedCity">选择一个地区</h3>
+                </div>
+              </div>
+              <div class="status-switcher" role="group" aria-label="城市状态">
+                <button type="button" class="status-btn" data-status="none">
+                  <i data-lucide="circle"></i>
+                  未标记
+                </button>
+                <button type="button" class="status-btn" data-status="visited">
+                  <i data-lucide="check-circle-2"></i>
+                  已去
+                </button>
+                <button type="button" class="status-btn" data-status="wish">
+                  <i data-lucide="flag"></i>
+                  心愿
+                </button>
+              </div>
+              <dl class="city-meta">
+                <div>
+                  <dt>当前状态</dt>
+                  <dd id="cityStatusText">未标记</dd>
+                </div>
+                <div>
+                  <dt>关联游记</dt>
+                  <dd id="cityDiaryText">0 篇</dd>
+                </div>
+                <div>
+                  <dt>旅行计划</dt>
+                  <dd id="cityPlanText">0 个</dd>
+                </div>
+              </dl>
+              <label class="field">
+                <span>城市/地区备注</span>
+                <textarea id="cityNote" rows="5" placeholder="写下这座城市或地区给你的印象、路线或下次想做的事"></textarea>
+              </label>
+              <div class="detail-actions">
+                <button class="primary-btn" id="quickDiaryBtn" type="button">
+                  <i data-lucide="plus"></i>
+                  写游记
+                </button>
+                <button class="secondary-btn" id="quickPlanBtn" type="button">
+                  <i data-lucide="calendar-plus"></i>
+                  加计划
+                </button>
+              </div>
+            </aside>
+          </div>
+
+          <section class="city-strip" aria-label="城市快捷列表">
+            <div class="section-title">
+              <h3>城市速览</h3>
+              <p id="cityStripHint">点击省份进入市级地图</p>
+            </div>
+            <div class="city-list" id="cityList"></div>
+          </section>
+        </section>
+
+        <section class="view" id="diaryView" data-view-panel="diary">
+          <div class="content-grid">
+            <form class="editor-panel" id="diaryForm">
+              <div class="section-title">
+                <h3>写一篇游记</h3>
+                <p>照片、故事和城市会一起沉淀到足迹里</p>
+              </div>
+              <input type="hidden" id="diaryId" />
+              <label class="field">
+                <span>标题</span>
+                <input id="diaryTitle" type="text" placeholder="例如：三天两晚的成都慢游" required />
+              </label>
+              <label class="field">
+                <span>城市/地区</span>
+                <select id="diaryCity" required></select>
+              </label>
+              <label class="field">
+                <span>日期</span>
+                <input id="diaryDate" type="date" required />
+              </label>
+              <label class="field">
+                <span>正文</span>
+                <textarea id="diaryBody" rows="8" placeholder="记录路线、风景、美食、花费或当时的心情"></textarea>
+              </label>
+              <label class="upload-box">
+                <input id="diaryPhotos" type="file" accept="image/*" multiple />
+                <i data-lucide="image-plus"></i>
+                <span>上传照片</span>
+              </label>
+              <div class="photo-preview" id="photoPreview"></div>
+              <div class="form-actions">
+                <button class="primary-btn" type="submit">
+                  <i data-lucide="save"></i>
+                  保存游记
+                </button>
+                <button class="ghost-btn" id="resetDiaryBtn" type="button">清空</button>
+              </div>
+            </form>
+
+            <section class="list-panel">
+              <div class="section-title">
+                <h3>游记列表</h3>
+                <p>支持按搜索词快速定位</p>
+              </div>
+              <div class="diary-list" id="diaryList"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="wishlistView" data-view-panel="wishlist">
+          <div class="content-grid">
+            <form class="editor-panel" id="planForm">
+              <div class="section-title">
+                <h3>添加旅行计划</h3>
+                <p>把想去的城市变成可执行的清单</p>
+              </div>
+              <input type="hidden" id="planId" />
+              <label class="field">
+                <span>城市/地区</span>
+                <select id="planCity" required></select>
+              </label>
+              <label class="field">
+                <span>出发时间</span>
+                <input id="planDate" type="date" />
+              </label>
+              <label class="field">
+                <span>预算</span>
+                <input id="planBudget" type="number" min="0" step="100" placeholder="例如：2500" />
+              </label>
+              <label class="field">
+                <span>计划状态</span>
+                <select id="planState">
+                  <option value="想去">想去</option>
+                  <option value="规划中">规划中</option>
+                  <option value="已订票">已订票</option>
+                  <option value="已完成">已完成</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>计划备注</span>
+                <textarea id="planNote" rows="6" placeholder="写下想看的景点、交通、住宿或同行人"></textarea>
+              </label>
+              <div class="form-actions">
+                <button class="primary-btn" type="submit">
+                  <i data-lucide="save"></i>
+                  保存计划
+                </button>
+                <button class="ghost-btn" id="resetPlanBtn" type="button">清空</button>
+              </div>
+            </form>
+
+            <section class="list-panel">
+              <div class="section-title">
+                <h3>心愿与计划</h3>
+                <p>心愿城市和未来路线集中管理</p>
+              </div>
+              <div class="plan-list" id="planList"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+    <script src="https://unpkg.com/lucide@1.16.0/dist/umd/lucide.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
